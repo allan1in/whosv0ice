@@ -25,11 +25,11 @@ export function TextInputPanel() {
 
   return (
     <div className="
-      rounded-[22px] bg-linear-185 from-[#ff8ee3] from-15% via-[#57d7e0] via-39% to-[#dbf1f2] to-85% p-0.5 shadow-[0_0_0_4px_white]
+      rounded-[22px] p-0.5 shadow-[0_0_0_4px_white]
     ">
       {/* Using px values for border-radius to ensure proper gradient border math (outer - padding = inner). */}
       {/* Standard classes like rounded-4xl use CSS calc() which doesn't align cleanly at corners. */}
-      <div className="rounded-[20px] bg-[#F9F9F9] p-1">
+      <div className="rounded-[20px] bg-neutral-100 p-1">
         <div className="space-y-4 rounded-2xl bg-white p-4 drop-shadow-xs">
           <Textarea
             placeholder="Start typing or paste your text here..."

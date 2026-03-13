@@ -141,15 +141,14 @@ export function DashboardSidebar() {
         className="flex items-center gap-2 pl-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:pl-0">
           <Image
             src="/logo.svg"
-            alt="Resonance"
+            alt="Whosv0ice"
             width={24}
             height={24}
             className="rounded-sm"
           />
           <span className="group-data-[collapsible=icon]:hidden font-semibold text-lg tracking-tighter text-foreground">
-            Resonance
+            Whosv0ice
           </span>
-          <SidebarTrigger className="ml-auto lg:hidden" />
         </div>
         <SidebarMenu>
           <SidebarMenuItem>

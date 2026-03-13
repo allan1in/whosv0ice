@@ -24,13 +24,13 @@ export function PageHeader({
         <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
       </div>
       <div className="flex items-center gap-3">
-         <Button variant="outline" size="sm">
+         <Button variant="outline" size="sm" asChild>
             <Link href="mailto:allanlinemail@gmail.com">
               <ThumbsUp />
               <span className="hidden lg:block">Feedback</span>
             </Link>
          </Button>
-         <Button variant="outline" size="sm">
+         <Button variant="outline" size="sm" asChild>
           <Link href="mailto:allanlinemail@gmail.com">
             <Headphones />
             <span className="hidden lg:block">Need help?</span>
