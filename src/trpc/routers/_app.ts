@@ -1,17 +1,10 @@
 import { z } from 'zod';
 import { baseProcedure, createTRPCRouter } from '../init';
+import { voicesRouter } from './voices';
 
  
 export const appRouter = createTRPCRouter({
-
-  health: baseProcedure
-    .query(async (opts) => {
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate a delay
-      // throw new Error('Error occurred');
-      return {
-       status: 'ok',
-      };
-    }),
+  voices: voicesRouter
 });
  
 // export type definition of API
