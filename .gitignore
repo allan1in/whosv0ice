@@ -50,3 +50,9 @@ next-env.d.ts
 __pycache__
 
 chatterbox_tts.py
+
+.venv
+
+requirements.txt
+
+output.wav
