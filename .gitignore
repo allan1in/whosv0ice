@@ -56,3 +56,5 @@ chatterbox_tts.py
 requirements.txt
 
 output.wav
+# Sentry Config File
+.env.sentry-build-plugin
