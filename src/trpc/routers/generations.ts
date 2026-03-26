@@ -1,4 +1,7 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
+import { polar } from "@/lib/polar";
+import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
 import { prisma } from "@/lib/db";
@@ -53,7 +56,29 @@ export const generationsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-       const voice = await prisma.voice.findUnique({
+      // Check for active subscription before generation
+      try {
+        const customerState = await polar.customers.getStateExternal({
+          externalId: ctx.orgId,
+        });
+        const hasActiveSubscription =
+          (customerState.activeSubscriptions ?? []).length > 0;
+        if (!hasActiveSubscription) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "SUBSCRIPTION_REQUIRED",
+          });
+        }
+      } catch (err) {
+        if (err instanceof TRPCError) throw err;
+        // Customer doesn't exist in Polar yet -> no subscription
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "SUBSCRIPTION_REQUIRED",
+        });
+      }
+
+      const voice = await prisma.voice.findUnique({
         where: {
           id: input.voiceId,
           OR: [
@@ -93,6 +118,12 @@ export const generationsRouter = createTRPCRouter({
           norm_loudness: true,
         },
         parseAs: "arrayBuffer",
+      });
+
+      Sentry.logger.info("Generation started", {
+        orgId: ctx.orgId,
+        voiceId: input.voiceId,
+        textLength: input.text.length,
       });
 
       if (error) {
@@ -143,6 +174,11 @@ export const generationsRouter = createTRPCRouter({
             r2ObjectKey,
           },
         });
+
+        Sentry.logger.info("Audio generated", {
+          orgId: ctx.orgId,
+          generationId: generation.id,
+        });
       } catch {
         if (generationId) {
           await prisma.generation
@@ -153,6 +189,11 @@ export const generationsRouter = createTRPCRouter({
             })
             .catch(() => {});
         }
+
+        Sentry.logger.error("Generation failed", {
+          orgId: ctx.orgId,
+          voiceId: input.voiceId,
+        });
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -166,6 +207,22 @@ export const generationsRouter = createTRPCRouter({
           message: "Failed to store generated audio",
         });
       }
+
+      // Ingest usage event to Polar (fire-and-forget, don't block response)
+      polar.events
+        .ingest({
+          events: [
+            {
+              name: env.POLAR_METER_TTS_GENERATION,
+              externalCustomerId: ctx.orgId,
+              metadata: { [env.POLAR_METER_TTS_PROPERTY]: input.text.length },
+              timestamp: new Date(),
+            },
+          ],
+        })
+        .catch(() => {
+          // Silently fail - don't break the user experience for metering errors
+        });
 
       return {
         id: generationId,
